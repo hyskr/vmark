@@ -36,6 +36,7 @@ const SYNC_DEBOUNCE_MS = 50;
 function pushViewMenuState(s: ViewMenuModeState): void {
   void invoke("sync_view_menu_state", {
     mode: s.mode,
+    mindMapVisible: useUIStore.getState().mindMapVisible,
     modeApplies: s.modeApplies,
     wordWrapApplies: s.wordWrapApplies,
     lineNumbersApplies: s.lineNumbersApplies,
@@ -43,6 +44,7 @@ function pushViewMenuState(s: ViewMenuModeState): void {
 }
 
 export function useViewMenuStateSync(): void {
+  const mindMapVisible = useUIStore((s) => s.mindMapVisible);
   const sourceMode = useUIStore((s) => s.sourceMode);
   const markdownSplitView = useUIStore((s) => s.markdownSplitView);
   const activeTabId = useTabStore(
@@ -87,6 +89,7 @@ export function useViewMenuStateSync(): void {
       if (timerRef.current) clearTimeout(timerRef.current);
     };
   }, [
+    mindMapVisible,
     state.mode,
     state.modeApplies,
     state.wordWrapApplies,

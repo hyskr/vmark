@@ -90,6 +90,8 @@ export const useUIStore = create<UIStore>((set, get) => ({
   toolbarSessionFocusIndex: -1,
   toolbarDropdownOpen: false,
   isDraggingFiles: false,
+  mindMapVisible: false,
+  toggleMindMap: () => set((s) => ({ mindMapVisible: !s.mindMapVisible })),
   terminalVisible: false,
   terminalHeight: TERMINAL_DEFAULT_HEIGHT,
   terminalWidth: TERMINAL_DEFAULT_WIDTH,

@@ -180,6 +180,7 @@ menu:
   view.focusOtherPane: "Focus Other Pane"
   view.syncPaneScroll: "Sync Pane Scroll"
   view.sourceMode: "Source Mode"
+  view.mindMap: "Document mind map"
   view.markdownSplit: "Markdown Split View"
   view.focusMode: "Focus Mode"
   view.typewriterMode: "Typewriter Mode"

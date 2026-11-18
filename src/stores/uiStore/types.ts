@@ -126,6 +126,8 @@ interface UIState {
   toolbarSessionFocusIndex: number;
   toolbarDropdownOpen: boolean;
   isDraggingFiles: boolean;
+  mindMapVisible: boolean;
+  toggleMindMap: () => void;
   terminalVisible: boolean;
   terminalHeight: number;
   terminalWidth: number;

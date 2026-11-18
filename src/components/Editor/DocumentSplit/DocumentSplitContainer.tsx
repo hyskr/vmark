@@ -21,19 +21,43 @@
  * @coordinates-with contexts/windowListening.ts — the gate the surface waits on
  * @module components/Editor/DocumentSplit/DocumentSplitContainer
  */
-import { useRef, type CSSProperties } from "react";
+import { lazy, Suspense, useState, useRef, type CSSProperties } from "react";
 import { useWindowLabel } from "@/contexts/WindowContext";
 import { PaneProvider } from "@/contexts/PaneContext";
 import { useWindowListening } from "@/contexts/windowListening";
 import { usePaneStore } from "@/stores/paneStore";
+import { useActiveTabId } from "@/hooks/useDocumentState";
+import { useTabStore } from "@/stores/tabStore";
 import { useUIStore } from "@/stores/uiStore";
 import { Editor } from "../Editor";
 import { SplitDivider } from "./SplitDivider";
 import { useSyncPaneScroll } from "./useSyncPaneScroll";
 import "./document-split.css";
 
+const StackMindPane = lazy(() => import("../StackMind/StackMindPane"));
+
 export function DocumentSplitContainer() {
-  return useWindowListening() ? <DocumentSplitPanes /> : null;
+  return useWindowListening() ? <DocumentWorkspace /> : null;
+}
+
+function DocumentWorkspace() {
+  const id = useActiveTabId();
+  const visible = useUIStore((s) => s.mindMapVisible);
+  const markdown = useTabStore((s) => {
+    const tab = id ? s.findTabById?.(id) : null;
+    return tab?.kind === "document" && tab.formatId === "markdown";
+  });
+  const [fraction, setFraction] = useState(0.6);
+  const open = visible && markdown && !!id;
+  return <div className="document-workspace">
+    <div className="document-workspace__surface" style={{ flexGrow: open ? fraction : 1 }}><DocumentSplitPanes /></div>
+    {open && <>
+      <SplitDivider fraction={fraction} onResize={(n) => setFraction(Math.max(0.2, Math.min(0.8, n)))} />
+      <aside className="document-workspace__surface" style={{ flexGrow: 1 - fraction }}>
+        <Suspense fallback={null}><StackMindPane key={id} tabId={id} /></Suspense>
+      </aside>
+    </>}
+  </div>;
 }
 
 function DocumentSplitPanes() {

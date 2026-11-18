@@ -23,6 +23,7 @@ import { registerCommands, type CommandDefinition } from "./CommandBus";
 import { registerPaneCommands } from "./paneCommands";
 import { registerLintCommands } from "./lintCommands";
 import { registerExplorerCommands } from "./explorerCommands";
+import { useTabStore } from "@/stores/tabStore";
 import { useUIStore } from "@/stores/uiStore";
 import { useContentServerStore } from "@/stores/contentServerStore";
 import { knowledgeBaseAvailableHere } from "@/services/contentServer/availability";
@@ -63,6 +64,17 @@ function isEffectivelySourceMode(windowLabel: string): boolean {
 /** Editing-mode commands: source, split, WYSIWYG, and the chrome around them. */
 function modeCommandSpecs(): CommandDefinition[] {
   return [
+    {
+      id: "view.toggleMindMap",
+      title: () => i18n.t("editor:stackMind.view"),
+      category: "view",
+      when: (ctx) => {
+        const id = getActiveTabId(typeof ctx.windowLabel === "string" ? ctx.windowLabel : "main");
+        const tab = id && useTabStore.getState().findTabById(id);
+        return !!tab && tab.kind === "document" && tab.formatId === "markdown";
+      },
+      run: () => useUIStore.getState().toggleMindMap(),
+    },
     {
       id: "view.toggleSourceMode",
       title: () => i18n.t("commands:view.toggleSourceMode"),

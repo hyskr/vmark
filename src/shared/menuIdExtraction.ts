@@ -164,6 +164,7 @@ export const EXCLUDED_MENU_IDS: ReadonlySet<string> = new Set([
   "wysiwyg-mode",
   "source-mode",
   "markdown-split",
+  "mind-map-view",
   "knowledge-base",
   "window-status",
   "breakdown",

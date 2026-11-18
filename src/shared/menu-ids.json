@@ -189,6 +189,7 @@
     "lint-prev",
     "markdown-split",
     "math-block",
+    "mind-map-view",
     "mindmap",
     "move-line-down",
     "move-line-up",
@@ -260,5 +261,5 @@
     "zoom-in",
     "zoom-out"
   ],
-  "generatedAt": "2026-10-22T21:37:34.852Z"
+  "generatedAt": "2026-11-18T11:06:15.151Z"
 }

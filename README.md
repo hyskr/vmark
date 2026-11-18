@@ -1,4 +1,12 @@
-# VMark
+# VMark StackMind
+
+This fork adds an editable mind map of the current Markdown document to VMark. Open **View → Document mind map** or click the tree icon in the status bar. Click a node to find its text, double-click to rename it, or drag a branch to move the whole section. The dock works alongside rich text, source, and split views.
+
+**[Download for Apple Silicon](https://github.com/hyskr/vmark/releases)** · **[Mind map guide](website/guide/markmap.md)** · **[Build workflow](.github/workflows/stackmind-macos.yml)**
+
+The macOS app is ad-hoc signed and uses the bundle identifier `app.vmark.stackmind`. The build workflow can run manually. Pushing a `stackmind-*` tag also publishes the ZIP on the fork’s Releases page.
+
+## Upstream VMark
 
 **The Plain-Text Workspace Where Humans and AI Collaborate**
 

@@ -34,6 +34,7 @@ pub(crate) struct ViewMenuState {
     /// Whether the WYSIWYG/Source/Split trio applies to the focused tab
     /// (markdown only). When false the trio is disabled.
     mode_applies: bool,
+    mind_map_visible: bool,
     /// Whether Word Wrap applies (a CodeMirror source surface is active).
     word_wrap_applies: bool,
     /// Whether Line Numbers applies. Kept separate from word-wrap because in
@@ -65,6 +66,7 @@ pub(crate) fn view_menu_targets(state: &ViewMenuState) -> Vec<(&'static str, boo
             state.mode_applies,
         ));
     }
+    out.push(("mind-map-view", state.mode_applies && state.mind_map_visible, state.mode_applies));
     out.push(("word-wrap", false, state.word_wrap_applies));
     out.push(("line-numbers", false, state.line_numbers_applies));
     out
@@ -118,12 +120,14 @@ pub fn sync_view_menu_state(
     app: AppHandle,
     mode: String,
     mode_applies: bool,
+    mind_map_visible: bool,
     word_wrap_applies: bool,
     line_numbers_applies: bool,
 ) -> Result<(), String> {
     let next = ViewMenuState {
         mode,
         mode_applies,
+        mind_map_visible,
         word_wrap_applies,
         line_numbers_applies,
     };
@@ -145,6 +149,7 @@ mod tests {
         ViewMenuState {
             mode: mode.to_string(),
             mode_applies,
+            mind_map_visible: false,
             word_wrap_applies: word_wrap,
             line_numbers_applies: line_numbers,
         }
@@ -188,6 +193,15 @@ mod tests {
             .map(|(id, _, _)| *id)
             .collect();
         assert_eq!(checked, vec!["source-mode"]);
+    }
+
+    #[test]
+    fn mind_map_is_a_distinct_view() {
+        let mut current = state("split", true, true, true);
+        current.mind_map_visible = true;
+        let targets = view_menu_targets(&current);
+        assert!(targets.contains(&("mind-map-view", true, true)));
+        assert!(targets.contains(&("markdown-split", true, true)));
     }
 
     #[test]

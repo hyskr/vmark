@@ -90,6 +90,11 @@ export function StatusBar() {
   const { running: mcpRunning, loading: mcpLoading, error: mcpError } = useMcpServer();
   const mcpClients = useMcpClients(mcpRunning);
   const { activeTabId, browserWorkspace } = useBrowserWorkspaceState();
+  const mindMapVisible = useUIStore((s) => s.mindMapVisible);
+  const mapApplies = useTabStore((s) => {
+    const tab = activeTabId ? s.findTabById?.(activeTabId) : null;
+    return tab?.kind === "document" && tab.formatId === "markdown";
+  });
   const activeBrowserTabId = browserWorkspace.activeBrowserPageId;
 
   const openMcpSettings = useCallback(() => openSettingsWindow("integrations"), []);
@@ -272,6 +277,8 @@ export function StatusBar() {
               sourceModeShortcut={sourceModeShortcut}
               onToggleSourceMode={() => toggleSourceModeWithCheckpoint(windowLabel)}
               modeToggleHidden={modeToggleHidden}
+              mindMapVisible={mindMapVisible}
+              onToggleMindMap={mapApplies ? useUIStore.getState().toggleMindMap : undefined}
               readOnly={readOnly}
               readOnlyShortcut={readOnlyShortcut}
               onToggleReadOnly={() => {

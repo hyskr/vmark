@@ -2,6 +2,10 @@
 
 VMark supporta [Markmap](https://markmap.js.org/) per creare alberi di mappe mentali interattive direttamente nei tuoi documenti Markdown. A differenza del tipo di diagramma mindmap statico di Mermaid, Markmap usa semplici intestazioni Markdown come input e fornisce pan/zoom/collasso interattivi.
 
+## Mappa mentale del documento
+
+Apri la mappa dal menu **Vista** o dal pulsante in basso a destra. Il pannello destro è ridimensionabile e mantiene la modalità di modifica a sinistra. Fai clic su un nodo per raggiungere il testo. Il cursore nell’editor mostra il nodo corrispondente. Fai doppio clic per rinominarlo, usa la barra per aggiungere o eliminare rami e trascinali per spostarli. Le modifiche si possono annullare nell’editor. Le immagini appaiono come miniature. Apri **Aspetto** per scegliere la disposizione e il tema. Sotto la mappa puoi ingrandire o ridurre la vista, leggere la percentuale o adattare l’intera mappa al pannello.
+
 ## Inserimento di una Mappa Mentale
 
 ### Usando il Menu

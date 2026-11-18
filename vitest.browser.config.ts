@@ -78,6 +78,7 @@ export default defineConfig({
       "react-dom/client",
       "react/jsx-dev-runtime",
       "react-i18next",
+      "@tauri-apps/api/mocks",
       "react-router-dom",
       "alfaaz",
       "smol-toml",

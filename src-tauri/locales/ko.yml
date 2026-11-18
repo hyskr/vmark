@@ -180,6 +180,7 @@ menu:
   view.focusOtherPane: "다른 창에 포커스"
   view.syncPaneScroll: "스크롤 동기화"
   view.sourceMode: "소스 코드 모드"
+  view.mindMap: "문서 마인드맵"
   view.markdownSplit: "마크다운 분할 보기"
   view.focusMode: "집중 모드"
   view.typewriterMode: "타자기 모드"

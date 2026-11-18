@@ -163,6 +163,18 @@ const baseProps = {
 };
 
 describe("StatusBarRight", () => {
+  it("shows the document map as an icon-only toggle beside the terminal", () => {
+    const toggle = vi.fn();
+    const { container } = render(<StatusBarRight {...baseProps} mindMapVisible onToggleMindMap={toggle} />);
+    const button = container.querySelector<HTMLButtonElement>(".status-map-toggle")!;
+    expect(button.textContent).toBe("");
+    expect(button.querySelector("svg")).not.toBeNull();
+    expect(button.title).toBeTruthy();
+    expect(button.getAttribute("aria-label")).toBe(button.title);
+    expect(button.getAttribute("aria-expanded")).toBe("true");
+    button.click();
+    expect(toggle).toHaveBeenCalledOnce();
+  });
   beforeEach(() => {
     vi.clearAllMocks();
   });

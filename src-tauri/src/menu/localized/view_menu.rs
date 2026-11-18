@@ -47,6 +47,14 @@ pub(super) fn build(app: &tauri::AppHandle, accel: &AccelFn) -> tauri::Result<Su
                 false,
                 accel("markdown-split", "Shift+F6"),
             )?,
+            &CheckMenuItem::with_id(
+                app,
+                "mind-map-view",
+                &t!("menu.view.mindMap"),
+                false,
+                false,
+                None::<&str>,
+            )?,
             &PredefinedMenuItem::separator(app)?,
             // The four pane commands. Three were reachable only
             // through the command palette; the #1081 plan deferred this menu.

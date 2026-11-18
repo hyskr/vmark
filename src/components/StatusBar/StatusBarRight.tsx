@@ -29,7 +29,7 @@
  */
 import { useTranslation } from "react-i18next";
 import i18n from "@/i18n";
-import { Code2, Lock, LockOpen, Satellite, Save, Terminal, Type } from "lucide-react";
+import { Code2, Network, Lock, LockOpen, Satellite, Save, Terminal, Type } from "lucide-react";
 import { useImagePasteToastStore } from "@/stores/imagePasteToastStore";
 import { flushActiveWysiwygNow } from "@/utils/wysiwygFlush";
 import { requestToggleTerminal } from "@/services/terminal/terminalGate";
@@ -108,6 +108,8 @@ interface StatusBarRightProps {
    * tabs where the markdown round-trip would corrupt the file.
    */
   modeToggleHidden?: boolean;
+  mindMapVisible?: boolean;
+  onToggleMindMap?: (() => void) | undefined;
   readOnly: boolean;
   readOnlyShortcut: string;
   onToggleReadOnly: () => void;
@@ -138,6 +140,8 @@ export function StatusBarRight({
   sourceModeShortcut,
   onToggleSourceMode,
   modeToggleHidden,
+  mindMapVisible,
+  onToggleMindMap,
   readOnly,
   readOnlyShortcut,
   onToggleReadOnly,
@@ -208,6 +212,12 @@ export function StatusBarRight({
         <Terminal size={ICON_SM} />
       </button>
 
+      {onToggleMindMap && (
+        <button type="button" className="vm-icon-btn vm-icon-btn--sm status-map-toggle" aria-expanded={!!mindMapVisible}
+          title={t("editor:stackMind.view")} aria-label={t("editor:stackMind.view")} onClick={onToggleMindMap}>
+          <Network size={ICON_SM} aria-hidden="true" />
+        </button>
+      )}
       {!modeToggleHidden && (
         <button
           className="status-mode"

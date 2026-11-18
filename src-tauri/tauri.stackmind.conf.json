@@ -1,0 +1,13 @@
+{
+  "productName": "VMark StackMind",
+  "identifier": "app.vmark.stackmind",
+  "bundle": {
+    "createUpdaterArtifacts": false,
+    "fileAssociations": []
+  },
+  "plugins": {
+    "updater": {
+      "endpoints": []
+    }
+  }
+}

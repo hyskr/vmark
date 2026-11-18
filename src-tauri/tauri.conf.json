@@ -106,6 +106,7 @@
     ],
     "resources": [
       "resources/workflows/**/*",
+      "resources/StackMind-NOTICES.txt",
       "resources/generated/THIRD_PARTY_LICENSES.txt"
     ],
     "macOS": {

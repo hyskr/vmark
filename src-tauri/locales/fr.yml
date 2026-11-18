@@ -180,6 +180,7 @@ menu:
   view.focusOtherPane: "Activer l'autre volet"
   view.syncPaneScroll: "Synchroniser le défilement"
   view.sourceMode: "Mode code source"
+  view.mindMap: "Carte mentale du document"
   view.markdownSplit: "Vue divisée Markdown"
   view.focusMode: "Mode focus"
   view.typewriterMode: "Mode machine à écrire"

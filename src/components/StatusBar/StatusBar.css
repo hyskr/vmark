@@ -723,7 +723,7 @@
 }
 
 /* ========================================
-   Terminal Toggle
+   Terminal and Document Map Toggles
    ======================================== */
 
 .status-terminal {
@@ -749,6 +749,7 @@
   background-color: var(--hover-bg-strong);
 }
 
+.status-map-toggle[aria-expanded="true"],
 .status-terminal.active {
   color: var(--accent-primary); /* ui-ok(state): icon-only control — the icon is the indicator */
 }

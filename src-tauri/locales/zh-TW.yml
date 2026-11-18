@@ -180,6 +180,7 @@ menu:
   view.focusOtherPane: "聚焦另一個窗格"
   view.syncPaneScroll: "同步窗格捲動"
   view.sourceMode: "原始碼模式"
+  view.mindMap: "全文心智圖"
   view.markdownSplit: "Markdown 分割檢視"
   view.focusMode: "專注模式"
   view.typewriterMode: "打字機模式"

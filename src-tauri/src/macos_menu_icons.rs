@@ -167,6 +167,7 @@ pub(crate) const MENU_ICONS: &[(&str, &str)] = &[
     ("lint-prev", "chevron.up"),
     ("wysiwyg-mode", "doc.richtext"),
     ("source-mode", "chevron.left.forwardslash.chevron.right"),
+    ("mind-map-view", "point.3.connected.trianglepath.dotted"),
     ("markdown-split", "rectangle.split.2x1"),
     ("focus-mode", "eye"),
     ("typewriter-mode", "character.cursor.ibeam"),

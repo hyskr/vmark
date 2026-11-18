@@ -2,6 +2,10 @@
 
 VMark unterstützt [Markmap](https://markmap.js.org/) für die Erstellung interaktiver Mindmap-Bäume direkt in Ihren Markdown-Dokumenten. Im Gegensatz zu Mermaids statischem Mindmap-Diagrammtyp verwendet Markmap gewöhnliche Markdown-Überschriften als Eingabe und bietet interaktives Schwenken/Zoomen/Einklappen.
 
+## Dokument-Mindmap
+
+Öffnen Sie die Dokument-Mindmap im Menü **Ansicht** oder über die Schaltfläche unten rechts. Das rechte Dock lässt sich in der Breite anpassen. Links bleibt der aktuelle Editor aktiv. Klicken Sie auf einen Knoten, um zur Textstelle zu springen. Die Cursorposition im Editor markiert den zugehörigen Zweig. Ein Doppelklick benennt einen Knoten um. Über die Symbolleiste können Sie Zweige hinzufügen und löschen, per Ziehen verschieben. Änderungen lassen sich im Editor rückgängig machen. Bilder erscheinen als Vorschaubilder. Wählen Sie Anordnung und Design unter **Erscheinungsbild**. Unter der Karte können Sie die Ansicht vergrößern, verkleinern oder die gesamte Karte einpassen.
+
 ## Eine Mindmap einfügen
 
 ### Über das Menü

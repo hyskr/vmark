@@ -97,6 +97,7 @@ const VIEW_BINDINGS: MenuCommandBinding[] = [
   { menuEvent: "menu:sync-pane-scroll", commandId: "view.toggleSyncScroll" },
   { menuEvent: "menu:wysiwyg-mode", commandId: "view.setWysiwygMode" },
   { menuEvent: "menu:source-mode", commandId: "view.toggleSourceMode" },
+  { menuEvent: "menu:mind-map-view", commandId: "view.toggleMindMap" },
   { menuEvent: "menu:markdown-split", commandId: "view.toggleMarkdownSplit" },
   { menuEvent: "menu:focus-mode", commandId: "view.toggleFocusMode" },
   { menuEvent: "menu:typewriter-mode", commandId: "view.toggleTypewriterMode" },

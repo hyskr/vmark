@@ -53,6 +53,7 @@ import { createTiptapExtensions } from "@/services/assembly/createTiptapExtensio
 import { useTiptapSettingsSync } from "@/hooks/useTiptapSettingsSync";
 import type { CursorInfo } from "@/stores/documentStore";
 import { useEditorStore } from "@/stores/editorStore";
+import { useUIStore } from "@/stores/uiStore";
 import { useSettingsStore } from "@/stores/settingsStore";
 import { useWindowLabel } from "@/contexts/WindowContext";
 import { useFocusedPaneTiptapRegistration } from "@/hooks/useFocusedPaneTiptapRegistration";
@@ -231,7 +232,15 @@ export function TiptapEditorInner({ hidden = false, readOnly = false, preview = 
     // Programmatic loads skip onUpdate; content-visibility follows them across the threshold.
     onTransaction: (event) => followContentReplacement(editorContainerRef, event, cvIdleTimeoutRef, hiddenRef.current),
     onSelectionUpdate: ({ editor, transaction }) => {
-      if (hiddenRef.current || previewRef.current) return;
+      if (hiddenRef.current) return;
+      if (previewRef.current) {
+        // A selection made by the reader in the split preview also locates the
+        // map. The editable source still owns formatting and history.
+        if (useUIStore.getState().mindMapVisible && editor.view.hasFocus() && transaction?.selectionSet) {
+          scheduleCursorUpdate(getCursorInfoFromTiptap(editor.view));
+        }
+        return;
+      }
       // Selection text sync runs before the cursor-tracking gate (no feedback
       // loop) so the status bar reflects the active editor after a mode switch.
       const { from, to, empty } = editor.state.selection;

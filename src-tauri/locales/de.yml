@@ -180,6 +180,7 @@ menu:
   view.focusOtherPane: "Anderen Bereich fokussieren"
   view.syncPaneScroll: "Bildlauf synchronisieren"
   view.sourceMode: "Quellcode-Modus"
+  view.mindMap: "Dokument-Mindmap"
   view.markdownSplit: "Markdown-Splitansicht"
   view.focusMode: "Fokusmodus"
   view.typewriterMode: "Schreibmaschinenmodus"

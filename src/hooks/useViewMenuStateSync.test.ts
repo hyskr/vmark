@@ -63,6 +63,7 @@ describe("useViewMenuStateSync", () => {
     expect(calls[0][0]).toBe("sync_view_menu_state");
     expect(Object.keys(calls[0][1] as object).sort()).toEqual([
       "lineNumbersApplies",
+      "mindMapVisible",
       "mode",
       "modeApplies",
       "wordWrapApplies",
@@ -74,6 +75,7 @@ describe("useViewMenuStateSync", () => {
     renderHook(() => useViewMenuStateSync());
     vi.advanceTimersByTime(60);
     expect(lastInvokeArgs()).toEqual({
+      mindMapVisible: false,
       mode: "wysiwyg",
       modeApplies: true,
       wordWrapApplies: false,
@@ -87,6 +89,7 @@ describe("useViewMenuStateSync", () => {
     renderHook(() => useViewMenuStateSync());
     vi.advanceTimersByTime(60);
     expect(lastInvokeArgs()).toEqual({
+      mindMapVisible: false,
       mode: "source",
       modeApplies: true,
       wordWrapApplies: true,
@@ -100,6 +103,7 @@ describe("useViewMenuStateSync", () => {
     renderHook(() => useViewMenuStateSync());
     vi.advanceTimersByTime(60);
     expect(lastInvokeArgs()).toEqual({
+      mindMapVisible: false,
       mode: "source",
       modeApplies: true,
       wordWrapApplies: true,
@@ -112,6 +116,7 @@ describe("useViewMenuStateSync", () => {
     renderHook(() => useViewMenuStateSync());
     vi.advanceTimersByTime(60);
     expect(lastInvokeArgs()).toEqual({
+      mindMapVisible: false,
       mode: "wysiwyg",
       modeApplies: false,
       wordWrapApplies: true,

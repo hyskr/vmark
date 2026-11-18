@@ -2,6 +2,7 @@
  * Two-document split layout (#1081). Tokens only; see 31-design-tokens.md.
  */
 
+.document-workspace,
 .document-split {
   display: flex;
   flex-direction: row; /* side-by-side only — the stacked orientation was removed */
@@ -52,3 +53,5 @@
   outline: none;
   background: var(--primary-color);
 }
+
+.document-workspace__surface { display: flex; flex-direction: column; flex-basis: 0; min-width: 0; min-height: 0; overflow: hidden; }

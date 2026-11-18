@@ -180,6 +180,7 @@ menu:
   view.focusOtherPane: "Attiva l'altro riquadro"
   view.syncPaneScroll: "Sincronizza lo scorrimento"
   view.sourceMode: "Modalità codice sorgente"
+  view.mindMap: "Mappa mentale del documento"
   view.markdownSplit: "Vista divisa Markdown"
   view.focusMode: "Modalità focus"
   view.typewriterMode: "Modalità macchina da scrivere"

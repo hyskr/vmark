@@ -180,6 +180,7 @@ menu:
   view.focusOtherPane: "もう一方のペインにフォーカス"
   view.syncPaneScroll: "スクロールを同期"
   view.sourceMode: "ソースコードモード"
+  view.mindMap: "文書全体のマインドマップ"
   view.markdownSplit: "Markdown分割ビュー"
   view.focusMode: "フォーカスモード"
   view.typewriterMode: "タイプライターモード"

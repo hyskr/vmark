@@ -1,0 +1,29 @@
+@import "mind-elixir/style";
+
+.stackmind { display: flex; flex: 1; flex-direction: column; min-width: 0; min-height: 0; background: var(--bg-color); }
+.stackmind__tools, .stackmind__zoom { display: flex; align-items: center; gap: var(--space-1); padding: var(--space-1) var(--space-2); }
+.stackmind__tools { position: relative; border-bottom: var(--border-thin) solid var(--border-color); }
+.stackmind__appearance-control { margin-inline-start: auto; }
+.stackmind__appearance {
+  /* ui-ok(float): transient appearance popover anchored below the dock toolbar */
+  position: absolute;
+  z-index: var(--z-popup);
+  top: 100%;
+  inset-inline-end: var(--space-1);
+  max-width: calc(100% - var(--space-2));
+  box-sizing: border-box;
+  display: grid;
+  gap: var(--space-2);
+  padding: var(--space-2);
+  background: var(--bg-color);
+  border: var(--border-thin) solid var(--border-color);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-popup);
+}
+.stackmind__appearance label { display: grid; grid-template-columns: auto minmax(0, 1fr); align-items: center; gap: var(--space-2); color: var(--text-secondary); font-size: var(--font-size-xs); }
+.stackmind__appearance .vm-select-field { min-width: 0; }
+.stackmind__zoom { flex-wrap: wrap; }
+.stackmind__zoom { border-top: var(--border-thin) solid var(--border-color); }
+.stackmind__zoom output { min-width: 4ch; text-align: center; font-size: var(--font-size-sm); font-variant-numeric: tabular-nums; }
+.stackmind__canvas { flex: 1; min-height: 0; overflow: hidden; }
+.stackmind me-tpc[aria-current="location"] { outline: var(--border-medium) solid var(--accent-primary); }

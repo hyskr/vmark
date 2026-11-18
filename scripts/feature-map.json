@@ -46,6 +46,7 @@
         "src/components/Editor/SourceEditor.tsx",
         "src/components/Editor/SplitPaneEditor",
         "src/plugins/codemirror",
+        "src/components/Editor/StackMind",
         "src/components/Editor/MarkdownSplitView.tsx",
         "src/components/Editor/FormatSurface.tsx",
         "src/components/Editor/tiptapEditorHelpers.ts",

@@ -2,6 +2,10 @@
 
 VMark prend en charge [Markmap](https://markmap.js.org/) pour créer des arbres de cartes mentales interactifs directement dans vos documents Markdown. Contrairement au type de diagramme mindmap statique de Mermaid, Markmap utilise des titres Markdown standard comme entrée et fournit un panoramique/zoom/réduction interactifs.
 
+## Carte mentale du document
+
+Ouvrez la carte depuis le menu **Affichage** ou le bouton en bas à droite. Le panneau de droite est redimensionnable et conserve le mode de l’éditeur à gauche. Cliquez sur un nœud pour rejoindre le texte. Le déplacement du curseur révèle le nœud correspondant. Double-cliquez pour renommer un nœud, utilisez la barre pour ajouter ou supprimer une branche, ou déplacez-la par glisser-déposer. Les modifications sont annulables dans l’éditeur. Les images apparaissent en miniature. Ouvrez **Apparence** pour choisir la disposition et le thème. Sous la carte, vous pouvez agrandir ou réduire la vue, lire le pourcentage ou afficher la carte entière.
+
 ## Insérer une carte mentale
 
 ### Utiliser le menu

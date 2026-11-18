@@ -99,6 +99,19 @@ describe("view.toggleKnowledgeBase", () => {
   });
 });
 
+describe("view.toggleMindMap", () => {
+  it.each(["rich", "source", "split"])("opens the right dock without changing %s mode", async mode => {
+    const id = useTabStore.getState().createTab("main", "/map.md");
+    useTabStore.getState().setActiveTab("main", id);
+    const flags = { sourceMode: mode === "source", markdownSplitView: mode === "split" };
+    useUIStore.setState({ ...flags, mindMapVisible: false });
+    await executeCommand("view.toggleMindMap", undefined, { windowLabel: "main" });
+    expect(useUIStore.getState()).toMatchObject({ ...flags, mindMapVisible: true });
+    await executeCommand("view.toggleMindMap", undefined, { windowLabel: "main" });
+    expect(useUIStore.getState()).toMatchObject({ ...flags, mindMapVisible: false });
+  });
+});
+
 describe("view.toggleMarkdownSplit", () => {
   it("is registered as a view command", () => {
     expect(getCommand("view.toggleMarkdownSplit")?.category).toBe("view");
@@ -192,7 +205,7 @@ describe("registerViewCommands — full command set", () => {
     expect(getCommand("view.toggleSourceMode")).toBeDefined();
   });
 
-  it("registers all 34 view/lint commands", () => {
+  it("registers all 35 view/lint commands", () => {
     const ids = listCommands().map((c) => c.id);
     expect(ids).toContain("view.toggleSidebar");
     expect(ids).toContain("view.toggleSourceMode");
@@ -207,7 +220,7 @@ describe("registerViewCommands — full command set", () => {
     expect(ids).toContain("explorer.toggleHiddenFiles");
     expect(ids).toContain("explorer.toggleAllFiles");
     expect(ids).toContain("view.toggleUniversalToolbar");
-    expect(ids.length).toBe(34);
+    expect(ids.length).toBe(35);
   });
 
   it("every command resolves a non-empty title and executes without throwing", async () => {
