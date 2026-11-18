@@ -49,9 +49,14 @@ const HEADING_SHORTCUTS = [1, 2, 3, 4, 5, 6].map((level) => `Mod-Alt-${level}`);
 /** Heading extension with sourceLine + blankLinesBefore attributes and auto IDs. */
 const EntryHeading = Heading.extend({
   addInputRules() {
-    return [...(this.parent?.() ?? []), ...[1, 2].map(level => textblockTypeInputRule({
-      find: new RegExp("^={" + level + "} $"), type: this.type, getAttributes: { level },
-    }))];
+    const min = Math.min(...this.options.levels);
+    return this.options.levels.map(level => {
+      const atx = `#{${min},${level}}`;
+      const prefix = level <= 2 ? `(?:${atx}|={${level}})` : atx;
+      return textblockTypeInputRule({
+        find: new RegExp(`^${prefix}\\s$`), type: this.type, getAttributes: { level },
+      });
+    });
   },
 });
 export const HeadingWithSourceLine = withHeadingId(

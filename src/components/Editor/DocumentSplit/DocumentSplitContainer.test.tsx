@@ -73,7 +73,7 @@ describe("DocumentSplitContainer (#1081)", () => {
     expect(panes).toHaveLength(2);
     expect(decodeURIComponent(panes[0].querySelector("img")!.getAttribute("src")!)).toContain("/pics/primary.png");
     expect(decodeURIComponent(panes[1].querySelector("img")!.getAttribute("src")!)).toContain("/pics/secondary.png");
-    expect(screen.getByRole("separator")).toBeInTheDocument();
+    expect(await screen.findByRole("separator")).toBeInTheDocument();
   });
 
   it("focusing a pane sets it as the focused pane", () => {
