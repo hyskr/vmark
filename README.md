@@ -6,6 +6,8 @@ This fork adds an editable mind map of the current Markdown document to VMark. O
 
 The macOS app is ad-hoc signed and uses the bundle identifier `app.vmark.stackmind`. The build workflow can run manually. Pushing a `stackmind-*` tag also publishes the ZIP on the fork’s Releases page.
 
+![An exported mind map showing highlighted Markdown, JavaScript syntax coloring, a formula and a table](website/public/screenshots/stackmind-rich.png)
+
 ## Upstream VMark
 
 **The Plain-Text Workspace Where Humans and AI Collaborate**
