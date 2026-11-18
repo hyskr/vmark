@@ -1,6 +1,6 @@
 # VMark StackMind
 
-This fork adds an editable mind map of the current Markdown document to VMark. Open **View → Document mind map** or click the tree icon in the status bar. Click a node to find its text, double-click to rename it, or drag a branch to move the whole section. The dock works alongside rich text, source, and split views.
+This fork adds an editable mind map of the current Markdown document to VMark. Open **View → Document mind map** or click the tree icon in the status bar. Click a node to find its text, double-click to rename it, or drag a branch to move the whole section. The dock works alongside rich text, source, and split views. It displays ordinary paragraphs, inline marks and code, highlighted fenced code, KaTeX math, quotes, tables, and images. The dock remembers its width and each document’s last pan and zoom. Open **Appearance** to export the complete map as HTML, SVG, or PNG.
 
 **[Download for Apple Silicon](https://github.com/hyskr/vmark/releases)** · **[Mind map guide](website/guide/markmap.md)** · **[Build workflow](.github/workflows/stackmind-macos.yml)**
 

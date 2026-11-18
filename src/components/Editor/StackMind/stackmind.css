@@ -1,4 +1,5 @@
 @import "mind-elixir/style";
+@import "../../../plugins/codeBlockLineNumbers/hljs-syntax.css";
 
 .stackmind { display: flex; flex: 1; flex-direction: column; min-width: 0; min-height: 0; background: var(--bg-color); }
 .stackmind__tools, .stackmind__zoom { display: flex; align-items: center; gap: var(--space-1); padding: var(--space-1) var(--space-2); }
@@ -27,3 +28,16 @@
 .stackmind__zoom output { min-width: 4ch; text-align: center; font-size: var(--font-size-sm); font-variant-numeric: tabular-nums; }
 .stackmind__canvas { flex: 1; min-height: 0; overflow: hidden; }
 .stackmind me-tpc[aria-current="location"] { outline: var(--border-medium) solid var(--accent-primary); }
+.stackmind me-tpc .text { max-width: min(58ch, 65vw); white-space: normal; overflow-wrap: anywhere; }
+.stackmind me-tpc p, .stackmind me-tpc pre, .stackmind me-tpc blockquote { margin: 0; }
+.stackmind me-tpc code { font-family: var(--font-mono); }
+.stackmind me-tpc pre { white-space: pre-wrap; text-align: start; }
+.stackmind me-tpc table { border-collapse: collapse; }
+.stackmind me-tpc th, .stackmind me-tpc td { border: var(--border-thin) solid var(--border-color); padding: var(--space-1); }
+.stackmind me-tpc blockquote { border-inline-start: var(--border-medium) solid var(--border-color); padding-inline-start: var(--space-2); }
+.stackmind me-tpc mark { background: var(--highlight-bg); color: var(--highlight-text); }
+.stackmind me-tpc pre { max-width: 60ch; }
+
+.stackmind__exports { display: flex; align-items: center; flex-wrap: wrap; gap: var(--space-1); font-size: var(--font-size-xs); }
+
+.stackmind .stackmind-link { color: var(--accent-primary); text-decoration: underline; }

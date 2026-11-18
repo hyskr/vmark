@@ -11,6 +11,8 @@ import { createMarkdownProcessor } from "@/utils/markdownPipeline/parser/process
 import { visit } from "unist-util-visit";
 import { checkNestingDepth } from "@/utils/markdownPipeline/nestingDepth";
 
+import { asMapBlock, type MapBlock, type MarkdownPart } from "./mapContent";
+
 const parser = createMarkdownProcessor();
 
 export interface Branch {
@@ -25,6 +27,8 @@ export interface Branch {
   indent: number;
   contentIndent: number;
   marker: string;
+  label?: MarkdownPart;
+  blocks: MapBlock[];
   images: { url: string; alt: string; start: number; offset: number; length: number }[];
   children: Branch[];
 }
@@ -37,7 +41,7 @@ export interface MapModel extends Branch {
 
 function branch(kind: Branch["kind"], start: number, end: number): Branch {
   return { kind, start, end, id: kind + start, topic: "", level: 0, indent: 0,
-    contentIndent: 0, marker: "", images: [], labelFrom: -1, labelTo: -1, children: [] };
+    contentIndent: 0, marker: "", blocks: [], images: [], labelFrom: -1, labelTo: -1, children: [] };
 }
 
 export function buildMap(source: string, title: string): MapModel {
@@ -86,9 +90,18 @@ export function buildMap(source: string, title: string): MapModel {
     const inline = h.children as { position?: Heading["position"] }[];
     node.labelFrom = inline[0]?.position?.start.offset ?? h.position!.end.offset!;
     node.labelTo = inline.at(-1)?.position?.end.offset ?? node.labelFrom;
+    // Some mark transforms produce children without positions. For ATX
+    // headings the raw line also preserves optional trailing hashes.
+    if (node.marker) {
+      const prefix = /^ {0,3}#{1,6}(?:[ \t]+|$)/.exec(lines[start])![0];
+      const label = lines[start].slice(prefix.length).replace(/(?:[ \t]+#+)?[ \t]*$/, "");
+      node.labelFrom = offsets[start] + prefix.length;
+      node.labelTo = node.labelFrom + label.length;
+    }
     node.topic = source.slice(node.labelFrom, node.labelTo);
     parents[parents.length - 1].children.push(node);
     parents.push(node);
+    node.label = h;
     collectImages(h, node);
   }
 
@@ -112,7 +125,11 @@ export function buildMap(source: string, title: string): MapModel {
       parent.children.push(node);
       for (const child of item.children) {
         if (child.type === "list") addList(child, node);
-        else collectImages(child, node);
+        else {
+          collectImages(child, node);
+          if (child === paragraph && child.type === "paragraph" && child.position?.start.line === start + 1) node.label = child;
+          else { const body = asMapBlock(child); if (body) node.blocks.push(body); }
+        }
       }
     }
   }
@@ -120,7 +137,12 @@ export function buildMap(source: string, title: string): MapModel {
   for (const block of tree.children) {
     if (block.type === "heading") addHeading(block);
     else if (block.type === "list") addList(block, parents[parents.length - 1]);
-    else collectImages(block, parents[parents.length - 1]);
+    else {
+      const parent = parents[parents.length - 1];
+      collectImages(block, parent);
+      const body = asMapBlock(block);
+      if (body) parent.blocks.push(body);
+    }
   }
   return root;
 }
@@ -190,4 +212,25 @@ export function moveBranch(map: MapModel, node: Branch, target: Branch, where: "
   return at <= node.start
     ? replaceLines(map, at, node.end, block.concat(map.lines.slice(at, node.start)))
     : replaceLines(map, node.start, at, map.lines.slice(node.end, at).concat(block));
+}
+
+/** Prose, fences and tables move as Markdown slices. Blank lines separate the
+ * destination block and list continuation indentation belongs to the new owner. */
+export function moveBody(map: MapModel, block: MapBlock, owner: Branch, neighbor: MapBlock | undefined,
+  where: "before" | "after" | "in"): ChangeSpec | null {
+  if (neighbor && (where === "in" || neighbor.id === block.id)) return null;
+  if (!neighbor && where !== "in") return null;
+  const line = neighbor ? (where === "before" ? neighbor.start : neighbor.end)
+    : (owner.children[0]?.start ?? owner.end);
+  const at = Math.min(map.offsets[line], map.source.length);
+  if (at >= block.from && at <= block.to) return null;
+  const originalIndent = block.from - map.offsets[block.start];
+  const indent = owner.kind === "item" ? " ".repeat(owner.contentIndent) : "";
+  const text = map.source.slice(block.from, block.to).split("\n").map((part, i) =>
+    indent + (i && originalIndent ? part.replace(new RegExp(`^ {0,${originalIndent}}`), "") : part)).join("\n");
+  const prefix = at === 0 || map.source.slice(0, at).endsWith("\n\n") ? "" : map.source[at - 1] === "\n" ? "\n" : "\n\n";
+  const suffix = at < map.source.length ? "\n\n" : map.source.endsWith("\n") ? "\n" : "";
+  const insertion = { from: at, insert: prefix + text + suffix };
+  const deletion = { from: block.from, to: block.to, insert: "" };
+  return at < block.from ? [insertion, deletion] : [deletion, insertion];
 }

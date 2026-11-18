@@ -51,7 +51,8 @@ const CORPUS_ROOTS = ["src/test/fixtures/gha-workflows", ".github/workflows"];
 // so `stable` toolchain drift accumulated unseen between Rust-touching PRs. Two
 // clippy 1.98 errors were latent on main until a version-string bump happened to
 // touch Cargo.toml and made the job run.
-const EXPECTED_FILE_COUNT = 39;
+// The StackMind macOS release workflow also participates in the live corpus.
+const EXPECTED_FILE_COUNT = 40;
 
 /**
  * Workflows whose no-op round trip is BYTE-identical today. Two-way
@@ -63,6 +64,7 @@ const BYTE_IDENTICAL: ReadonlySet<string> = new Set([
   ".github/workflows/pdf-smoke.yml",
   ".github/workflows/release-smoke.yml",
   ".github/workflows/soak.yml",
+  ".github/workflows/stackmind-macos.yml",
   ".github/workflows/release.yml",
   ".github/workflows/rust-cache-warm.yml",
   ".github/workflows/rust-coverage.yml",

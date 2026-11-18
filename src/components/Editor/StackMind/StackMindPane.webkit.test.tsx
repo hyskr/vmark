@@ -1,3 +1,6 @@
+import MindElixir from "mind-elixir";
+import { renderMapExport } from "./exportMap";
+import { buildMap } from "./mapEdits";
 import { describe, expect, it, afterEach, beforeAll, vi } from "vitest";
 import i18n from "@/i18n";
 import "@/styles/index.css";
@@ -117,6 +120,63 @@ describe("whole-document mind map in WebKit", () => {
     gesture("gesturechange", 1.5);
     gesture("gestureend", 1.5);
     await vi.waitFor(() => expect(percent()).toBeGreaterThan(beforePinch));
+  });
+
+  it("shows ordinary body blocks, inline markup, tables and real typeset math", async () => {
+    const source = ["A **bold** paragraph with ==highlight==, ~~removed~~, `code` and $x^2$.", "", "> Quoted text", "",
+      "```ts", "const x = 2;", "```", "", "$$", "x = 2", "$$", "",
+      "| A | B |", "| --- | --- |", "| 1 | 2 |", "", "- Item", "", "  Continued paragraph"].join("\n");
+    const {host, view} = mount("rich-nodes", source);
+    const canvas = host.querySelector(".stackmind__canvas")!;
+    await vi.waitFor(() => expect(canvas.querySelector("strong")?.textContent).toBe("bold"));
+    expect(canvas.querySelectorAll(".katex")).toHaveLength(2);
+    expect(canvas.querySelector("mark")?.textContent).toBe("highlight");
+    expect(canvas.querySelector("del")?.textContent).toBe("removed");
+    expect(canvas.querySelector("pre .hljs-keyword")?.textContent).toBe("const");
+    expect(canvas.querySelector("pre code")?.textContent).toContain("const x = 2;");
+    expect(canvas.querySelector("blockquote")?.textContent).toContain("Quoted text");
+    expect(canvas.querySelector("td")?.textContent).toBe("1");
+    expect(canvas.textContent).toContain("Continued paragraph");
+    const paragraph = canvas.querySelector("strong")!.closest<HTMLElement>("me-tpc")!;
+    paragraph.click();
+    expect(view.state.selection.main.head).toBe(0);
+    const remove = host.querySelector<HTMLButtonElement>('.stackmind__tools button[aria-label="删除"]')!;
+    remove.click();
+    expect(view.state.doc.toString()).not.toContain("A **bold** paragraph");
+    expect(view.state.doc.toString()).toContain("> Quoted text");
+    expect(undo(view)).toBe(true);
+    expect(view.state.doc.toString()).toBe(source);
+  });
+
+  it.each(["html", "svg", "png"] as const)("exports a rich full-size %s snapshot", async (format) => {
+    const doc = buildMap("# Heading\n\nA ==mark== and $x^2$.\n\n```js\nconst x = 2;\n```", "Map");
+    const blob = await renderMapExport(format, { theme: MindElixir.THEME, direction: MindElixir.RIGHT }, doc, new Map());
+    if (format === "png") {
+      expect(Array.from(new Uint8Array(await blob.slice(0, 8).arrayBuffer()))).toEqual([137,80,78,71,13,10,26,10]);
+      return;
+    }
+    const output = new DOMParser().parseFromString(await blob.text(), format === "html" ? "text/html" : "image/svg+xml");
+    expect(output.querySelector("svg")).not.toBeNull();
+    expect(output.querySelector("mark")?.textContent).toBe("mark");
+    expect(output.querySelector(".katex")).not.toBeNull();
+    expect(output.querySelector("pre code")?.textContent).toBe("const x = 2;");
+  });
+
+  it("reopens a document at its saved pan and zoom without applying another document's position", async () => {
+    const first = mount("viewport", "# A\n## B");
+    const zoomIn = first.host.querySelector<HTMLButtonElement>('button[aria-label="放大"]')!;
+    zoomIn.click();
+    await vi.waitFor(() => expect(first.host.querySelector("output")!.value).not.toBe("100%"));
+    const map = first.host.querySelector<HTMLElement>(".map-canvas")!;
+    first.host.querySelector(".map-container")!.dispatchEvent(new WheelEvent("wheel", { bubbles:true, cancelable:true, deltaX:-24, deltaY:15 }));
+    const transform = map.style.transform;
+    const percent = first.host.querySelector("output")!.value;
+    flushSync(() => roots.pop()!.unmount());
+    const next = mount("viewport", "# A\n## B");
+    await vi.waitFor(() => expect(next.host.querySelector<HTMLElement>(".map-canvas")!.style.transform).toBe(transform));
+    expect(next.host.querySelector("output")!.value).toBe(percent);
+    const other = mount("second-viewport", "# A\n## B");
+    expect(other.host.querySelector<HTMLElement>(".map-canvas")!.style.transform).not.toBe(transform);
   });
 
   it("renames in its own split, reflects source edits and shares source undo/redo", async () => {

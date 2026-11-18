@@ -54,3 +54,23 @@ describe("StackMind source edits", () => {
     expect(edit("", insertChild(empty, empty, "x"))).toBe("# x");
   });
 });
+
+describe("body block projection and edits", () => {
+  it("moves a list continuation into another heading with its code indentation intact", async () => {
+    const { moveBody } = await import("./mapEdits");
+    const source = "# A\n- item\n\n  ```js\n  const x = 2\n  ```\n\n# B\ntext";
+    const map = buildMap(source, "Doc");
+    const item = map.children[0].children[0];
+    const body = item.blocks[0];
+    const moved = edit(source, moveBody(map, body, map.children[1], undefined, "in"));
+    const next = buildMap(moved, "Doc");
+    expect(next.children[0].children[0].blocks).toEqual([]);
+    expect(next.children[1].blocks.map(b => b.part.type)).toEqual(["paragraph", "code"]);
+    expect(next.children[1].blocks[1].part.value).toBe("const x = 2");
+  });
+  it("retains closing hashes when renaming a heading made entirely from marked text", () => {
+    const source = "## ==Before== ##\nBody";
+    const map = buildMap(source, "Doc");
+    expect(edit(source, renameNode(map.children[0], "After"))).toBe("## After ##\nBody");
+  });
+});

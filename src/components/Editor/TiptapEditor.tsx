@@ -5,18 +5,10 @@
  * to ProseMirror document on load, serializes back on every edit with adaptive debouncing.
  *
  * Key decisions:
- *   - Initial content loaded via setContentWithoutHistory to avoid polluting the undo stack
- *     with the initial parse.
- *   - Adaptive debounce (100ms–5s) scales with document size: larger docs get longer
- *     delays to reduce serialization frequency without losing keystrokes on unmount.
- *   - Initial parse (tiptapInitialLoad.ts) runs in a layout effect for a small document, so
- *     the first painted frame of a tab switch already shows it (#1634); its outside setup
- *     (jump, focus, toolbar context) waits for a passive effect, after useEditor has kept or
- *     replaced the editor. A large one, or one opened under the loading indicator, defers
- *     via setTimeout(0) so the shell paints first.
- *     A parse that fails goes to services/editor/unparseableDocument.ts (Source mode + message).
- *   - shouldRerenderOnTransaction: false — Tiptap's default full-React-rerender per
- *     transaction is wasted work here since state flows through Zustand selectors.
+ *   - The first parse skips history. Small documents parse before paint; large documents
+ *     defer so the shell can paint. Parse failures open Source mode with a message.
+ *   - Serialization uses an adaptive 100ms–5s debounce and flushes on unmount.
+ *   - Zustand selectors publish state updates without re-rendering on every transaction.
  *   - content-visibility only on large docs and never on macOS: .cv-enabled marks those
  *     editors, .cv-idle applies it between edits (onUpdate, onTransaction, useContentVisibilityMode).
  *   - Native spellcheck disabled above 100K chars where rescans block the main thread.
@@ -24,10 +16,9 @@
  *     initial render/focus.
  *   - Scroll offset is remembered per tab, so a remount with no cursor to restore
  *     to comes back to the reading position instead of the top (#1249).
- *   - Flusher registration moved to useEffect (not onCreate) to handle React Strict Mode
- *     double-mount without duplicate registrations.
+ *   - The flusher registers in an effect so Strict Mode remounts keep one registration.
  *   - Hidden mode skips all store updates and content syncs, deferring to visibility transition.
- *   - Preview mode (markdown split) syncs content but skips active-editor registration.
+ *   - A split preview can locate the map while its source editor owns edits and undo.
  *
  * @coordinates-with tiptapInitialLoad.ts — the one-time initial parse, immediate or deferred
  * @coordinates-with useTiptapFlush.ts — serialize-to-store flush + adaptive debounce machinery

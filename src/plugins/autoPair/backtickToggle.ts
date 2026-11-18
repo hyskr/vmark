@@ -4,7 +4,7 @@
  * Purpose: Handles backtick (`) input as a code mark toggle in WYSIWYG mode.
  * Uses a consecutive backtick state machine:
  *   - 1st backtick: activate code mark (or wrap selection / escape from code)
- *   - 2nd consecutive backtick: deactivate code mark (user changed their mind)
+ *   - 2nd consecutive backtick: open a literal double-backtick code delimiter
  *   - 3rd consecutive backtick: create code block
  *
  * Split from handlers.ts to keep files under ~300 lines.
@@ -113,6 +113,34 @@ export function handleBacktickCodeToggle(
   const $from = state.doc.resolve(from);
   const inCode = $from.marks().some((m) => m.type === codeMarkType);
 
+  const prefix = $from.parent.textBetween(0, $from.parentOffset, "\n", "\uFFFC");
+  const pairState = stateFor(view);
+  if (from === to && prefix.endsWith("``") && pairState.consecutive === 2 && pairState.lastFrom === from) {
+    const code = state.schema.nodes.codeBlock;
+    if (code) {
+      resetBacktickState(view);
+      const tr = state.tr.delete(from - 2, from);
+      dispatch(tr.replaceSelectionWith(code.create()));
+      return true;
+    }
+  }
+  // A two-backtick delimiter allows a literal single backtick in the code.
+  // Locate it in the document so pausing to type a formula or CJK text is safe.
+  const runs = [...prefix.matchAll(/`+/g)];
+  const double = runs.filter(run => run[0].length === 2 &&
+    !state.doc.rangeHasMark($from.start() + run.index!, $from.start() + run.index! + 2, codeMarkType));
+  if (from === to && double.length % 2 === 1) {
+    const start = double[double.length - 1].index!;
+    if (prefix.endsWith("`") && !prefix.endsWith("``") && prefix.length > start + 3) {
+      let body = prefix.slice(start + 2, -1);
+      if (body.startsWith(" ") && body.endsWith(" ") && body.trim()) body = body.slice(1, -1);
+      const tr = state.tr.replaceWith($from.start() + start, from, state.schema.text(body, [codeMarkType.create()]));
+      dispatch(tr.removeStoredMark(codeMarkType));
+    } else dispatch(state.tr.insertText("`", from, to));
+    resetBacktickState(view);
+    return true;
+  }
+
   if (inCode) {
     // Escape: move cursor to end of code mark (not part of consecutive counting)
     resetBacktickState(view);
@@ -151,8 +179,9 @@ export function handleBacktickCodeToggle(
   }
 
   if (s.consecutive === 2) {
-    // Second backtick: deactivate code mark (user changed their mind)
-    const tr = state.tr.removeStoredMark(codeMarkType);
+    // A second backtick selects Markdown’s two-character delimiter.
+    const tr = state.tr.removeStoredMark(codeMarkType).insertText("``", from, to);
+    s.lastFrom = from + 2;
     dispatch(tr);
     return true;
   }

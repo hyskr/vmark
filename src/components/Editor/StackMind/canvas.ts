@@ -6,7 +6,10 @@
 import MindElixir, { type MindElixirInstance, type NodeObj, type Topic } from "mind-elixir";
 import { escapeHtml } from "@/utils/sanitize";
 import { commitMapEdit, goToMapLine, mapHistory } from "./editorLink";
-import { insertChild, moveBranch, removeBranch, renameNode, type Branch, type MapModel } from "./mapEdits";
+import { insertChild, moveBranch, removeBranch, renameNode, moveBody, type MapModel } from "./mapEdits";
+
+import { rememberViewport } from "./viewport";
+import { projectMap, type MapEntry } from "./mapProjection";
 
 export type Layout = "left" | "both" | "right";
 export type MapTheme = "auto" | "light" | "dark";
@@ -14,18 +17,18 @@ export const MIN_ZOOM = 0.2;
 export const MAX_ZOOM = 4;
 const ZOOM_STEP = 1.25;
 
-type Entry = { id: string; line: number; end: number; parent?: string; branch?: Branch };
 
-export function mountCanvas(host: HTMLElement, tabId: string, newTitle: string, report: (failed: boolean) => void, onScale: (scale: number) => void) {
+export function mountCanvas(host: HTMLElement, tabId: string, newTitle: string, identity: string, report: (failed: boolean) => void, onScale: (scale: number) => void) {
   let model: MapModel | undefined;
+  let imageUrls: ReadonlyMap<string, string> = new Map();
   let locked = true;
   let autoFit = true;
   let fitting = false;
   let version = 0;
   let activeId = "";
-  let entries = new Map<string, Entry>();
+  let entries = new Map<string, MapEntry>();
   const folded = new Set<string>();
-  const imageLabels = new Map<string, string>();
+  let labels = new Map<string, string>();
   let followLine = 0;
   let layout: Layout = "right";
   let theme: MapTheme = "auto";
@@ -46,25 +49,30 @@ export function mountCanvas(host: HTMLElement, tabId: string, newTitle: string, 
   }
   function move(from: Topic[], to: Topic, where: "before" | "after" | "in") {
     if (!model || from.length !== 1 || !host.contains(to) || !host.contains(from[0])) return false;
-    const a = entry(from[0].nodeObj)?.branch, b = entry(to.nodeObj)?.branch;
-    if (a && b) apply(moveBranch(model, a, b, where));
+    const a = entry(from[0].nodeObj), b = entry(to.nodeObj);
+    if (a?.branch && b?.branch) apply(moveBranch(model, a.branch, b.branch, where));
+    else if (a?.block && b) {
+      const owner = b.branch ?? (b.parent ? entries.get(b.parent)?.branch : undefined);
+      if (owner) apply(moveBody(model, a.block, owner, b.block, where));
+    }
     return false;
   }
 
   const mind: MindElixirInstance = new MindElixir({
     el: host, direction: MindElixir.RIGHT, toolBar: false, contextMenu: false, keypress: false,
     allowUndo: false, selectionContainer: host, scaleMin: MIN_ZOOM, scaleMax: MAX_ZOOM,
-    markdown: (text, raw) => escapeHtml(imageLabels.get(raw.id) ?? text),
+    markdown: (text, raw) => labels.get(raw.id) ?? escapeHtml(text),
     before: {
       beginEdit(el) {
-        const branch = entry((el ?? mind.currentNode)?.nodeObj)?.branch;
-        return !locked && !!branch && branch.kind !== "root";
+        const hit = entry((el ?? mind.currentNode)?.nodeObj);
+        return !locked && !!hit && (!!hit.block || (!!hit.branch && hit.branch.kind !== "root"));
       },
       moveNodeIn: (a, b) => move(a, b, "in"),
       moveNodeBefore: (a, b) => move(a, b, "before"),
       moveNodeAfter: (a, b) => move(a, b, "after"),
     },
   });
+  const viewport = rememberViewport(mind, identity);
   mind.bus.addListener("scale", scale => {
     if (!fitting) autoFit = false;
     onScale(scale);
@@ -146,7 +154,7 @@ export function mountCanvas(host: HTMLElement, tabId: string, newTitle: string, 
     const el = (e.target as Element).closest<Topic>("me-tpc");
     const found = entry(el?.nodeObj);
     if (!el || !found || !model) return;
-    goToMapLine(tabId, found.line, model, found.branch);
+    goToMapLine(tabId, found.line, model, found.branch, !!found.image);
     highlight(found.id, false);
   }
   host.addEventListener("click", clicked);
@@ -171,8 +179,14 @@ export function mountCanvas(host: HTMLElement, tabId: string, newTitle: string, 
     }
   }
   function remove() {
-    const n = selected();
-    if (model && n && n.kind !== "root") apply(removeBranch(model, n));
+    const target = entries.get(activeId) ?? entry(mind.currentNode?.nodeObj);
+    if (!model || !target) return;
+    if (target.block) apply({ from: target.block.from, to: target.block.to, insert: "" });
+    else if (target.image) {
+      const { offset, length } = target.image;
+      // HTML fragments can contain several images and unrelated body text.
+      if (model.source.slice(offset, offset + length).startsWith("!")) apply({ from: offset, to: offset + length, insert: "" });
+    } else if (target.branch) apply(removeBranch(model, target.branch));
   }
   function keys(e: KeyboardEvent) {
     const input = host.querySelector("#input-box");
@@ -195,9 +209,9 @@ export function mountCanvas(host: HTMLElement, tabId: string, newTitle: string, 
       return;
     }
     if (op.name !== "finishEdit") return;
-    const n = entry(op.obj)?.branch;
-    if (!n) return;
-    const change = renameNode(n, op.obj.topic);
+    const hit = entry(op.obj);
+    if (!hit || (!hit.branch && !hit.block)) return;
+    const change = hit.block ? { from: hit.block.from, to: hit.block.to, insert: op.obj.topic } : renameNode(hit.branch!, op.obj.topic);
     // React may coalesce a rename immediately followed by Undo. Keep the
     // canvas at its last source snapshot until a new snapshot is delivered.
     op.obj.topic = op.origin;
@@ -208,7 +222,8 @@ export function mountCanvas(host: HTMLElement, tabId: string, newTitle: string, 
     const key = n.id + n.topic;
     if (n.expanded === false) folded.add(key); else folded.delete(key);
   });
-  function setLayout(value: Layout) {
+  function setLayout(value: Layout, initialize = false) {
+    if (layout === value && !initialize) return;
     layout = value;
     if (!model) return;
     if (value === "left") mind.initLeft();
@@ -222,40 +237,18 @@ export function mountCanvas(host: HTMLElement, tabId: string, newTitle: string, 
     update(next: MapModel, readOnly: boolean, urls: ReadonlyMap<string, string>) {
       const initial = !model;
       model = next;
+      imageUrls = urls;
       locked = readOnly;
       mind.editable = !locked;
       version++;
-      entries = new Map();
-      imageLabels.clear();
-      function convert(n: Branch, parent?: string): NodeObj {
-        entries.set(n.id, { id: n.id, line: n.start, end: n.end, ...(parent && { parent }), branch: n });
-        // Keep the raw Markdown for inline editing and substitute image alt
-        // text only in the rendered label, including after a layout change.
-        if (n.images.length) {
-          let label = n.topic;
-          for (const img of n.images.slice().reverse()) {
-            if (img.offset < n.labelFrom || img.offset + img.length > n.labelTo) continue;
-            const at = img.offset - n.labelFrom;
-            label = label.slice(0, at) + img.alt + label.slice(at + img.length);
-          }
-          imageLabels.set(n.id, label || "…");
-        }
-        const children: NodeObj[] = [];
-        for (const [i, image] of n.images.entries()) {
-          const id = n.id + "img" + i;
-          const url = urls.get(image.url);
-          entries.set(id, { id, parent: n.id, line: image.start, end: image.start + 1 });
-          children.push({ id, topic: image.alt, metadata: version,
-            ...(url && { image: { url, width: 160, height: 100, fit: "contain" as const } }) });
-        }
-        for (const c of n.children) children.push(convert(c, n.id));
-        children.sort((a,b) => entries.get(a.id)!.line - entries.get(b.id)!.line);
-        return { id: n.id, topic: n.topic || "…", metadata: version, expanded: !folded.has(n.id + n.topic), children };
-      }
-      const data = { nodeData: convert(next) };
-      if (initial) { mind.init(data); refreshTheme(); setLayout(layout); }
+      const projection = projectMap(next, version, urls, folded);
+      entries = projection.entries;
+      labels = projection.labels;
+      const data = projection.data;
+      if (initial) { mind.init(data); refreshTheme(); setLayout(layout, true); }
       else mind.refresh(data);
       follow(followLine);
+      if (initial) viewport.restore();
       if (pendingEditAt !== null) {
         const fresh = [...entries.values()].find(e => e.line === pendingEditAt && e.branch?.topic === newTitle);
         pendingEditAt = null;
@@ -269,8 +262,13 @@ export function mountCanvas(host: HTMLElement, tabId: string, newTitle: string, 
     },
     follow, add: () => add(), remove, setLayout,
     setTheme(value: MapTheme) { theme = value; if (model) refreshTheme(); },
+    async export(format: import("./exportMap").MapExportFormat) {
+      if (!model) throw new Error("No document");
+      return (await import("./exportMap")).renderMapExport(format, mind, model, imageUrls);
+    },
     zoom, fit, resize: () => { if (autoFit) fit(); },
     destroy() {
+      viewport.dispose();
       for (const name of gestures) host.removeEventListener(name, pinch);
       host.removeEventListener("wheel", skipDuplicateWheel, true);
       observer.disconnect();

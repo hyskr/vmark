@@ -61,7 +61,7 @@ export function richCursorLine(id: string, model: MapModel, fallback: number) {
   return target < 0 && fallback >= current.start && fallback < current.end ? fallback : current.start;
 }
 
-export function goToMapLine(id: string, line: number, model: MapModel, branch?: Branch) {
+export function goToMapLine(id: string, line: number, model: MapModel, branch?: Branch, image = false) {
   const { cm, pm } = views(id);
   if (cm && cm.state.doc.toString() === model.source) {
     const at = cm.state.doc.line(Math.min(line + 1, cm.state.doc.lines)).from;
@@ -84,7 +84,7 @@ export function goToMapLine(id: string, line: number, model: MapModel, branch?: 
       if (pos === null && n.type.name === name && ordinal-- === 0) pos = p + 1;
     });
   }
-  if (!branch) {
+  if (image) {
     let imageAt = -1;
     state.doc.descendants((n, at) => {
       if (imageAt < 0 && n.attrs.sourceLine === line + 1 && (n.type.name === "image" || n.type.name === "block_image")) imageAt = at;

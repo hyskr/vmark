@@ -6,6 +6,8 @@ VMark supports [Markmap](https://markmap.js.org/) for creating interactive mindm
 
 Open **View → Document mind map**, or click the map button at the bottom right. The map opens in a resizable right dock while your current editor stays in place, including rich text, source, and split view. Click a node to jump to its text. Moving the editor cursor reveals the corresponding node. Double-click a heading or list item to rename it inline. Add or delete a branch using the panel toolbar, or drag it to rearrange the document. Edits use the active editor’s undo history. Markdown images appear as thumbnails. Open **Appearance** to choose the layout and theme. Use **Zoom out** and **Zoom in** below the map to change its scale, or **Fit map** to show the whole document.
 
+The map includes paragraphs, inline marks, code with syntax highlighting, tables, and rendered inline or display math. It restores the last dock width and document viewport. Under **Appearance → Export**, choose HTML, SVG or PNG to save the expanded map.
+
 ## Inserting a Mindmap
 
 ### Using Menu

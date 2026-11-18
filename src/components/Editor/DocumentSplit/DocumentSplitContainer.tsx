@@ -28,11 +28,20 @@ import { useWindowListening } from "@/contexts/windowListening";
 import { usePaneStore } from "@/stores/paneStore";
 import { useActiveTabId } from "@/hooks/useDocumentState";
 import { useTabStore } from "@/stores/tabStore";
+import { readDockFraction, saveDockFraction } from "../StackMind/viewport";
 import { useUIStore } from "@/stores/uiStore";
 import { Editor } from "../Editor";
-import { SplitDivider } from "./SplitDivider";
+import type { SplitDividerProps } from "./SplitDivider";
 import { useSyncPaneScroll } from "./useSyncPaneScroll";
 import "./document-split.css";
+
+const Divider = lazy(() => import("./SplitDivider").then(m => ({ default: m.SplitDivider })));
+
+function SplitDivider(props: SplitDividerProps) {
+  return <Suspense fallback={<div className="document-split__divider" />}>
+    <Divider {...props} />
+  </Suspense>;
+}
 
 const StackMindPane = lazy(() => import("../StackMind/StackMindPane"));
 
@@ -47,12 +56,12 @@ function DocumentWorkspace() {
     const tab = id ? s.findTabById?.(id) : null;
     return tab?.kind === "document" && tab.formatId === "markdown";
   });
-  const [fraction, setFraction] = useState(0.6);
+  const [fraction, setFraction] = useState(readDockFraction);
   const open = visible && markdown && !!id;
   return <div className="document-workspace">
     <div className="document-workspace__surface" style={{ flexGrow: open ? fraction : 1 }}><DocumentSplitPanes /></div>
     {open && <>
-      <SplitDivider fraction={fraction} onResize={(n) => setFraction(Math.max(0.2, Math.min(0.8, n)))} />
+      <SplitDivider fraction={fraction} onResize={(n) => { const width = Math.max(0.2, Math.min(0.8, n)); setFraction(width); saveDockFraction(width); }} />
       <aside className="document-workspace__surface" style={{ flexGrow: 1 - fraction }}>
         <Suspense fallback={null}><StackMindPane key={id} tabId={id} /></Suspense>
       </aside>

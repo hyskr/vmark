@@ -3,6 +3,10 @@
  * @module components/Editor/StackMind/StackMindPane
  */
 import { useCallback, useDeferredValue, useId, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { save } from "@tauri-apps/plugin-dialog";
+import { writeFile } from "@tauri-apps/plugin-fs";
+import { toast } from "sonner";
+import type { MapExportFormat } from "./exportMap";
 import { useTranslation } from "react-i18next";
 import { ChevronDown, GitBranchPlus, Scan, Trash2, X, ZoomIn, ZoomOut } from "lucide-react";
 import { useDismissOnOutsideOrEscape } from "@/hooks/useDismissOnOutsideOrEscape";
@@ -31,7 +35,7 @@ function ZoomButton({ label, icon: Icon, onClick, disabled = false }: {
 }
 
 export default function StackMindPane({ tabId }: { tabId: string }) {
-  const { t } = useTranslation(["editor", "common", "settings"]);
+  const { t } = useTranslation(["editor", "common", "settings", "commands", "dialog"]);
   const source = useDocumentStore((s) => s.documents[tabId]?.content ?? "");
   const readOnly = useDocumentStore((s) => s.documents[tabId]?.readOnly ?? true);
   const path = useDocumentStore((s) => s.documents[tabId]?.filePath);
@@ -61,12 +65,12 @@ export default function StackMindPane({ tabId }: { tabId: string }) {
   useLayoutEffect(() => {
     const el = host.current;
     if (!el) return;
-    const adapter = mountCanvas(el, tabId, newTitle, report, setScale);
+    const adapter = mountCanvas(el, tabId, newTitle, path ?? tabId, report, setScale);
     canvas.current = adapter;
     const resize = new ResizeObserver(() => adapter.resize());
     resize.observe(el);
     return () => { resize.disconnect(); adapter.destroy(); canvas.current = null; };
-  }, [tabId, newTitle]);
+  }, [tabId, newTitle, path]);
 
   useLayoutEffect(() => {
     if (!model || !canvas.current) return;
@@ -86,6 +90,18 @@ export default function StackMindPane({ tabId }: { tabId: string }) {
   }, [cursor, model, tabId, newTitle]);
   useLayoutEffect(() => { canvas.current?.setLayout(layout); }, [layout, newTitle]);
   useLayoutEffect(() => { canvas.current?.setTheme(theme); }, [theme, newTitle]);
+  async function exportFile(format: MapExportFormat) {
+    const adapter = canvas.current;
+    if (!adapter || !model) return;
+    setAppearanceOpen(false);
+    try {
+      const filename = await save({ defaultPath: title.replace(/\.(md|markdown)$/i, "") + "." + format,
+        filters: [{ name: format.toUpperCase(), extensions: [format] }] });
+      if (!filename || canvas.current !== adapter) return;
+      const blob = await adapter.export(format);
+      await writeFile(filename, new Uint8Array(await blob.arrayBuffer()));
+    } catch { toast.error(t("dialog:fileError.exportFailed", { format: format.toUpperCase() })); }
+  }
   return <section className="stackmind" aria-label={t("stackMind.view")}>
     <div className="stackmind__tools" role="toolbar" aria-label={t("stackMind.view")}>
       <button type="button" className="vm-icon-btn vm-icon-btn--sm" title={t("stackMind.add")}
@@ -117,6 +133,11 @@ export default function StackMindPane({ tabId }: { tabId: string }) {
               {themes.map(v => <option key={v} value={v}>{t(`stackMind.theme.${v}`)}</option>)}
             </select></span>
           </label>
+          <div className="stackmind__exports" role="group" aria-label={t("commands:category.export")}>
+            <span>{t("commands:category.export")}</span>
+            {(["html", "svg", "png"] as const).map(format => <button key={format} type="button" className="vm-btn vm-btn--compact"
+              onClick={() => void exportFile(format)}>{format.toUpperCase()}</button>)}
+          </div>
         </div>}
       </div>
       <button type="button" className="vm-icon-btn vm-icon-btn--sm" title={t("common:close")}

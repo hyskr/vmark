@@ -128,10 +128,15 @@ function escapeBareDollars(escaped: string): string {
  */
 export function handleText(
   node: { value: string },
-  _parent: unknown,
+  parent: unknown,
   state: TextState,
   info: TextInfo,
 ): string {
+  // A paragraph consisting solely of "==" has no closing highlight marker.
+  // Preserve a literal pair typed before the optional heading-trigger space.
+  if (node.value === "==" && parent && typeof parent === "object" &&
+    "type" in parent && parent.type === "paragraph" && "children" in parent &&
+    Array.isArray(parent.children) && parent.children.length === 1) return "==";
   const escaped = encodeBlankLineEndings(
     escapeBareDollars(state.safe(node.value, info)),
     info.before,

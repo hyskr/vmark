@@ -7,17 +7,10 @@
  * Browser pages are grouped into one bottom-level Browser workspace tab. Browser
  * navigation and webpage tabs live in the dedicated top BrowserChrome surface.
  *
- * User interactions:
- *   - Click a tab pill to switch documents; middle-click or X to close
- *   - Right-click a tab for context menu (pin, close others, move to window, etc.)
- *   - Drag tabs to reorder or detach to new windows
- *   - Click the "+" button to create a new empty tab
- *   - Click mode button to toggle Source/WYSIWYG
- *   - Click terminal button to toggle terminal panel
- *
+ * Tab controls support creation, switching, closing, reordering and detaching.
+ * The right controls switch editing mode and toggle the terminal or document map.
  * Key decisions:
- *   - Tab drag/drop is implemented in useStatusBarTabDrag via pointer events,
- *     not HTML5 drag API, for finer control over reorder vs. detach threshold.
+ *   - Pointer drag distance distinguishes tab reordering from detaching.
  *   - Word/char counts are isolated in StatusBarCounts component to avoid
  *     re-rendering the entire StatusBar on every keystroke.
  *   - Auto-save timestamp fades out after 5 seconds but continues updating

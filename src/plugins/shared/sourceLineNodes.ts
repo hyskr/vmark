@@ -28,7 +28,7 @@ import { TableRow } from "@tiptap/extension-table-row";
 import { withSourceLine, withBlankLinesBefore } from "./sourceLineAttr";
 import { withHeadingId } from "./headingIdAttr";
 import { CodeBlockWithLineNumbers } from "@/plugins/codeBlockLineNumbers";
-import type { Node } from "@tiptap/core";
+import { textblockTypeInputRule, type Node } from "@tiptap/core";
 
 /** `node` without the named keyboard shortcuts its parent registers. */
 function withoutShortcuts<O, S>(node: Node<O, S>, keys: readonly string[]): Node<O, S> {
@@ -47,8 +47,15 @@ const HEADING_SHORTCUTS = [1, 2, 3, 4, 5, 6].map((level) => `Mod-Alt-${level}`);
 // intentionally excluded — it is never a top-level block.
 
 /** Heading extension with sourceLine + blankLinesBefore attributes and auto IDs. */
+const EntryHeading = Heading.extend({
+  addInputRules() {
+    return [...(this.parent?.() ?? []), ...[1, 2].map(level => textblockTypeInputRule({
+      find: new RegExp("^={" + level + "} $"), type: this.type, getAttributes: { level },
+    }))];
+  },
+});
 export const HeadingWithSourceLine = withHeadingId(
-  withBlankLinesBefore(withSourceLine(withoutShortcuts(Heading, HEADING_SHORTCUTS))),
+  withBlankLinesBefore(withSourceLine(withoutShortcuts(EntryHeading, HEADING_SHORTCUTS))),
 );
 /** Paragraph extension with sourceLine + blankLinesBefore attributes. */
 export const ParagraphWithSourceLine = withBlankLinesBefore(
