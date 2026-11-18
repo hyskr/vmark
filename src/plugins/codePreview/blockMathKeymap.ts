@@ -24,8 +24,36 @@
 import { Extension } from "@tiptap/core";
 import { Plugin, PluginKey, TextSelection } from "@tiptap/pm/state";
 import type { EditorView } from "@tiptap/pm/view";
+import { MATH_BLOCK_LANGUAGE } from "@/utils/markdownPipeline/mdastBlockConverters";
 import { blockMathEditing } from "./editingRegistry";
 import { EDITING_STATE_CHANGED } from "./tiptap";
+
+function startTypedFormula(view: EditorView, e: KeyboardEvent): boolean {
+  if (e.key !== "Enter" || e.isComposing || e.keyCode === 229 || e.shiftKey || e.ctrlKey || e.metaKey || e.altKey) return false;
+  const { state } = view;
+  const { $from, empty } = state.selection;
+  if (!empty || $from.parent.type.name !== "paragraph" || $from.parent.textContent !== "$$" || $from.parentOffset !== 2) return false;
+  const code = state.schema.nodes.codeBlock;
+  if (!code) return false;
+  const container = $from.node(-1);
+  const index = $from.index(-1);
+  const formula = code.create({ language: MATH_BLOCK_LANGUAGE });
+  const start = $from.before();
+  const tr = state.tr;
+  let caret = start + 1;
+  if (container.canReplaceWith(index, index + 1, code)) tr.replaceWith(start, $from.after(), formula);
+  else if (container.type.name === "listItem" && index === 0 && container.canReplaceWith(1, 1, code)) {
+    const paragraph = $from.parent.type.create();
+    tr.replaceWith(start, $from.after(), [paragraph, formula]);
+    caret += paragraph.nodeSize;
+  } else return false;
+  e.preventDefault();
+  blockMathEditing().getState().startEditing(caret - 1, "");
+  tr.setSelection(TextSelection.create(tr.doc, caret)).setMeta(EDITING_STATE_CHANGED, true);
+  view.dispatch(tr.scrollIntoView());
+  view.focus();
+  return true;
+}
 
 const blockMathKeymapKey = new PluginKey("blockMathKeymap");
 
@@ -121,6 +149,7 @@ export const blockMathKeymapExtension = Extension.create({
         key: blockMathKeymapKey,
 
         props: {
+          handleDOMEvents: { keydown: startTypedFormula },
           handleKeyDown(view, event) {
             const { editingPos } = blockMathEditing().getState();
             if (editingPos === null) return false;
